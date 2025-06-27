@@ -1,6 +1,7 @@
-import { Client, Account, Databases, Storage } from 'appwrite';
+// src/lib/appwrite/appwrite.js
+import { Client, Account, Databases, Storage, Query } from 'appwrite';
 
-const client = new Client()
+export const client = new Client()
     .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
     .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
 
@@ -8,14 +9,16 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 
+// Centralized database ID
+const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 
-export async function fetchCollectionStats(collectionId) {
+/**
+ * Fetch total count of documents in a collection.
+ * Optionally accepts query filters (e.g., for "drafts").
+ */
+export async function fetchCollectionStats(collectionId, queries = []) {
     try {
-        const { total } = await databases.listDocuments(
-            import.meta.env.VITE_APPWRITE_DB_ID,
-            collectionId,
-            []
-        );
+        const { total } = await databases.listDocuments(DB_ID, collectionId, queries);
         return total;
     } catch (err) {
         console.error(`Error fetching count for ${collectionId}`, err);
@@ -23,12 +26,18 @@ export async function fetchCollectionStats(collectionId) {
     }
 }
 
+/**
+ * Fetch up to 5 most recent documents from a collection.
+ */
 export async function fetchRecentDocuments(collectionId) {
     try {
         const { documents } = await databases.listDocuments(
-            import.meta.env.VITE_APPWRITE_DB_ID,
+            DB_ID,
             collectionId,
-            [ 'orderDesc("$createdAt")', 'limit(5)' ]
+            [
+                Query.orderDesc('$createdAt'),
+                Query.limit(5)
+            ]
         );
         return documents;
     } catch (err) {

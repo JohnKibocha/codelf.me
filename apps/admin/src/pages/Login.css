@@ -1,0 +1,209 @@
+:root {
+    --bg: #f9fafb;
+    --fg: #0f172a;
+    --input-bg: #f1f5f9;
+    --input-fg: #0f172a;
+    --button-bg: #1d4ed8;
+    --button-fg: #ffffff;
+    --button-bg-hover: #1e40af;
+    --card-bg: #ffffff;
+    --link-color: #2563eb;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0f172a;
+        --fg: #f8fafc;
+        --input-bg: #1e293b;
+        --input-fg: #f1f5f9;
+        --button-bg: #cbd5e1;
+        --button-fg: #0f172a;
+        --button-bg-hover: #e2e8f0;
+        --card-bg: #1e293b;
+        --link-color: #93c5fd;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--fg);
+}
+
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100dvh;
+    background: var(--bg);
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.login-container {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 560px;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.banner-wrapper {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.login-banner {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.login-logo-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.4rem;
+    filter: brightness(0) saturate(100%);
+}
+
+.login-logo-text {
+    width: 150px;
+    height: auto;
+    filter: brightness(0) saturate(100%);
+    margin-bottom: 0.2rem;
+}
+
+.login-subtitle {
+    font-size: 0.92rem;
+    color: var(--fg);
+    opacity: 0.75;
+    margin-bottom: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .login-logo-icon,
+    .login-logo-text {
+        filter: brightness(1000%);
+    }
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    align-items: center;
+    width: 100%;
+}
+
+.input-group {
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--fg);
+    background-color: var(--input-bg);
+    color: var(--input-fg);
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.login-input:focus {
+    border-color: var(--button-bg);
+}
+
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    color: #7f1d1d !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .input-error {
+        background-color: #2f1a1a !important;
+        color: #f87171 !important;
+    }
+}
+
+.input-error-message {
+    color: #ef4444;
+    font-size: 0.88rem;
+    margin-top: 0.25rem;
+    width: 100%;
+    text-align: left;
+}
+
+.password-group {
+    position: relative;
+    width: 100%;
+}
+
+.show-password-btn.icon-btn {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--fg);
+    cursor: pointer;
+    z-index: 2;
+    height: 1.5em;
+    width: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.show-password-btn.icon-btn svg {
+    width: 1.2rem;
+    height: 1.2rem;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 8px;
+    background: var(--button-bg);
+    color: var(--button-fg);
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.login-btn:hover:not(:disabled) {
+    background-color: var(--button-bg-hover);
+}
+
+.login-btn:disabled {
+    background-color: #a5b4fc;
+    cursor: not-allowed;
+}
