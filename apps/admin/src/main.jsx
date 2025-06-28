@@ -6,6 +6,8 @@ import Login from "./pages/Login"
 import Dashboard from './pages/Dashboard'
 import App from './App'
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ProjectsList from "./pages/admin/ProjectsList.jsx";
+import RoutesComponent from './routes/Routes';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -28,16 +30,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <BrowserRouter>
                 <Routes>
                     <Route path="/login" element={<Login />} />
-                    <Route path="/" element={<App />}>
+                    <Route path="/*" element={<App />}> {/* Use /* to match all nested routes */}
                         <Route
-                            path="dashboard"
+                            path="*"
                             element={
                                 <ProtectedRoute>
-                                    <Dashboard />
+                                    <RoutesComponent />
                                 </ProtectedRoute>
                             }
                         />
-                        <Route path="*" element={<Navigate to="/dashboard" />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

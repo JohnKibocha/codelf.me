@@ -17,6 +17,8 @@ import { useDashboardData } from '../hooks/useDashboardData';
 import { client } from '../lib/appwrite/appwrite';
 import { Databases, Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
+import { useLoading } from '../context/LoadingContext';
+import SkeletonLoader from '../components/ui/SkeletonLoader';
 
 const APPWRITE_DATABASE_ID = 'codelf-cms';
 
@@ -31,11 +33,10 @@ const cardMeta = [
 ];
 
 export default function Dashboard() {
-    const { setLoading, setIsInitialFetch } = useOutletContext();
+    const { setLoading } = useLoading();
     const { user, loading: authLoading } = useAuth();
     const [counts, setCounts] = useState({});
     const [recent, setRecent] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
 
     // Initial data from custom hook (on app load)
     const {
@@ -47,16 +48,13 @@ export default function Dashboard() {
     // Prevent data fetching if not authed or still checking auth
     useEffect(() => {
         if (authLoading || !user) {
-            setIsLoading(true);
-            setLoading(true);
+            setLoading(true, 'Loading dashboard...');
             return;
         }
         setCounts(initialCounts);
         setRecent(initialRecent);
-        setIsLoading(initialLoading);
-        setLoading(initialLoading);
-        if (!initialLoading) setIsInitialFetch(false);
-    }, [authLoading, user, initialCounts, initialRecent, initialLoading, setLoading, setIsInitialFetch]);
+        setLoading(initialLoading, 'Loading dashboard...');
+    }, [authLoading, user, initialCounts, initialRecent, initialLoading, setLoading]);
 
     // Background real-time sync
     const updateLiveData = useCallback(async () => {
@@ -100,21 +98,20 @@ export default function Dashboard() {
     // Fetch fresh data on mount or when user/auth is ready
     useEffect(() => {
         if (!authLoading && user) {
-            // Use a flag to prevent state updates on unmounted component
             let isMounted = true;
+            setLoading(true, 'Refreshing dashboard...');
             updateLiveData().finally(() => {
-                if (isMounted) setIsLoading(false);
+                if (isMounted) setLoading(false);
             });
             return () => { isMounted = false; };
         }
-    }, [authLoading, user, updateLiveData]);
+    }, [authLoading, user, updateLiveData, setLoading]);
 
     // Don't render anything while auth is loading
     if (authLoading) {
-        return <div className="flex items-center justify-center h-screen"><div className="loader"></div></div>;
+        return <SkeletonLoader rows={3} height={60} className="mt-10" />;
     }
     if (!user) {
-        // Optionally, you could redirect here, but ProtectedRoute should handle it
         return null;
     }
 
@@ -140,15 +137,13 @@ export default function Dashboard() {
     return (
         <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-8">
             <h1 className="text-2xl font-semibold text-[var(--fg)] mb-2">Overview</h1>
-
             <CardGrid data={cardData} />
-
             <div>
                 <h2 className="text-xl font-semibold mb-4 text-[var(--fg)]">Recent Activity</h2>
                 {recent.length > 0 ? (
                     <RecentTable rows={recent.slice(0, 5)} />
                 ) : (
-                    <div className="empty-state text-gray-500">No recent activity in the last 30 days.</div>
+                    <SkeletonLoader rows={3} height={40} />
                 )}
             </div>
         </div>

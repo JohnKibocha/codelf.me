@@ -1,6 +1,7 @@
 // src/components/RecentTable.jsx
 import EmptyState from './EmptyState';
 import clsx from 'clsx';
+import Table from './ui/Table';
 
 // Map Appwrite collection IDs or logical types to display names
 const typeDisplayMap = {
@@ -121,30 +122,17 @@ export default function RecentTable({ rows = [] }) {
 
     const showAvatar = rows.some(row => row.avatar);
 
+    const columns = [
+        ...(showAvatar ? [{ key: 'avatar', label: 'Avatar', render: row => getDisplayValue(row, 'avatar') }] : []),
+        { key: 'title', label: 'Title', render: row => getDisplayValue(row, 'title') },
+        { key: 'type', label: 'Type', render: row => getDisplayValue(row, 'type') },
+        { key: 'status', label: 'Status', render: row => getDisplayValue(row, 'status') },
+        { key: 'date', label: 'Date', render: row => getDisplayValue(row, 'date') },
+    ];
+
     return (
         <div className="overflow-x-auto mt-6 rounded-xl bg-[var(--card-bg)] shadow-md shadow-gray-300/50 dark:shadow-black/40">
-            <table className="dashboard-table">
-                <thead>
-                <tr>
-                    {showAvatar && <th>Avatar</th>}
-                    <th>Title</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-                </thead>
-                <tbody>
-                {rows.map((item, i) => (
-                    <tr key={i} className="transition hover:bg-[var(--input-bg)]">
-                        {showAvatar && <td>{getDisplayValue(item, 'avatar')}</td>}
-                        <td>{getDisplayValue(item, 'title')}</td>
-                        <td>{getDisplayValue(item, 'type')}</td>
-                        <td>{getDisplayValue(item, 'status')}</td>
-                        <td>{getDisplayValue(item, 'date')}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+            <Table columns={columns} data={rows} rowKey={"$id"} />
         </div>
     );
 }

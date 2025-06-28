@@ -59,7 +59,6 @@ export default function Sidebar({ open, collapsed, onToggle, isMobile }) {
 
     // Consistent icon sizes for all icons.
     const iconSize = 24;
-    const sidebarIconSize = 40;
 
     // Base style for all icon buttons (NavLink and regular buttons)
     const iconButtonBaseClass = 'flex items-center rounded-lg transition-colors duration-150 hover:bg-[var(--input-bg)]';
@@ -106,7 +105,7 @@ export default function Sidebar({ open, collapsed, onToggle, isMobile }) {
                     aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                     tabIndex={0}
                 >
-                    <SidebarIcon size={40} style={{ width: 40, height: 40 }} />
+                    <SidebarIcon size={24} style={{ width: 24, height: 24 }} />
                 </button>
             </div>
 

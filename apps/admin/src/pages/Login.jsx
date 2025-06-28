@@ -3,6 +3,7 @@ import { Account, Client } from 'appwrite'
 import { toast, ToastContainer } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext';
+import { useLoading } from '../context/LoadingContext';
 import 'react-toastify/dist/ReactToastify.css'
 
 // Appwrite Config
@@ -16,9 +17,9 @@ const account = new Account(client)
 export default function Login() {
     const navigate = useNavigate();
     const { user, loading: authLoading, setUser } = useAuth();
+    const { isLoading, setLoading } = useLoading();
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [loading, setLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [banner, setBanner] = useState('/banner-light.jpg')
     const [touched, setTouched] = useState({ email: false, password: false })
@@ -54,7 +55,7 @@ export default function Login() {
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setLoading(true, 'Logging in...');
         try {
             await account.createEmailPasswordSession(email, password);
             const userData = await account.get();
@@ -159,10 +160,10 @@ export default function Login() {
                         {/* Submit */}
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isLoading}
                             className="w-full py-3 text-base font-semibold rounded-lg bg-[var(--button-bg)] text-[var(--button-fg)] hover:bg-[var(--button-bg-hover)] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {loading ? 'Logging in...' : 'Log In'}
+                            {isLoading ? 'Logging in...' : 'Log In'}
                         </button>
                     </form>
                 </div>

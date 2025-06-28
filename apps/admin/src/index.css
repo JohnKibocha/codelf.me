@@ -20,7 +20,7 @@
   :root {
     --bg: #0f172a;
     --fg: #f8fafc;
-    --input-bg: #1e293b;
+    --input-bg: #22304a; /* lighter than card-bg for contrast */
     --input-fg: #f1f5f9;
     --button-bg: #cbd5e1;
     --button-fg: #0f172a;
@@ -45,7 +45,7 @@ body {
   margin: 2rem auto;
 }
 
-input {
+/*input {
   background-color: var(--input-bg);
   color: var(--input-fg);
   border: none;
@@ -65,7 +65,7 @@ button {
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s ease;
-}
+}*/
 
 button:hover {
   background-color: var(--button-bg-hover);

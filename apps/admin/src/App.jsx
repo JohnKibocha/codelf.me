@@ -4,7 +4,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
-import LoadingSpinnerOverlay from './components/LoadingSpinnerOverlay';
+import LoadingOverlay from './components/ui/LoadingOverlay';
+import { LoadingProvider, useLoading } from './context/LoadingContext';
 
 function App() {
     useAutoTheme();
@@ -15,9 +16,8 @@ function App() {
     const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 768);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-    // Global loading states managed by App.jsx
-    const [loading, setLoading] = useState(true);
-    const [isInitialFetch, setIsInitialFetch] = useState(true);
+    // Update: Use context-based loading
+    const { isLoading, loadingText } = useLoading();
 
     useEffect(() => {
         const handleResize = () => {
@@ -84,15 +84,20 @@ function App() {
             )}
 
             <div className={`${mainContentMarginClass()} transition-all duration-200`}>
-                <Outlet context={{ setLoading, setIsInitialFetch }} />
+                <Outlet />
             </div>
 
-            {/* Global Spinner Overlay:
-                Rendered at the root level to ensure it covers the entire screen.
-                Its z-index is set to be very high (z-[9999]) in its own component. */}
-            {loading && isInitialFetch && <LoadingSpinnerOverlay />}
+            {/* Update: Use context loading overlay */}
+            {isLoading && <LoadingOverlay text={loadingText} />}
         </div>
     );
 }
 
-export default App;
+// Update: Wrap App in LoadingProvider
+export default function AppWithProvider() {
+    return (
+        <LoadingProvider>
+            <App />
+        </LoadingProvider>
+    );
+}
