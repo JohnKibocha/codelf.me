@@ -1,0 +1,165 @@
+/* index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Editor base font styles */
+.tiptap {
+  font-family: 'Charter', 'Georgia', 'Times New Roman', serif;
+  line-height: 1.75;
+  background-color: var(--card-bg);
+  color: var(--fg);
+  padding: 0.75rem 0.5rem; /* Further reduced left/right padding */
+  border-radius: 0.75rem; /* Reduced border radius */
+  outline: none !important; /* Remove focus outline */
+  box-shadow: none !important; /* Remove any focus box-shadow */
+}
+
+.tiptap:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Code block formatting */
+.tiptap pre {
+  background-color: var(--input-bg);
+  color: var(--fg);
+  font-family: 'Fira Code', Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+  padding: 1rem;
+  border-radius: 0.4rem; /* Slightly reduced for code blocks */
+  white-space: pre;
+  tab-size: 4;
+  -moz-tab-size: 4;
+  overflow-x: auto;
+}
+
+.tiptap pre code {
+  all: unset;
+  font-family: inherit;
+  color: inherit;
+}
+
+.tiptap code:not(pre code) {
+  background-color: var(--input-bg);
+  color: var(--link-color);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: 'Fira Code', Menlo, Consolas, monospace;
+}
+
+/* Markdown tables */
+.tiptap table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: var(--card-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.tiptap thead {
+  background-color: var(--input-bg);
+}
+
+.tiptap th,
+.tiptap td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--input-bg);
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.tiptap tr:last-child td {
+  border-bottom: none;
+}
+
+.tiptap tr:hover td {
+  background-color: #f3f4f6;
+}
+
+/* Headings */
+.tiptap h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1.5rem 0;
+  line-height: 1.2;
+  color: var(--fg);
+}
+.tiptap h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 2rem 0 1.25rem 0;
+  line-height: 1.3;
+  color: var(--fg);
+}
+.tiptap h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  line-height: 1.4;
+  color: var(--fg);
+}
+
+/* Paragraphs */
+.tiptap p {
+  margin: 1.25em 0;
+  font-size: 1.05rem;
+  color: var(--fg);
+}
+
+/* Lists */
+.tiptap ul,
+.tiptap ol {
+  margin: 1.25em 0 1.25em 2em;
+  padding: 0;
+}
+.tiptap ul {
+  list-style-type: disc;
+}
+.tiptap ol {
+  list-style-type: decimal;
+}
+.tiptap li {
+  margin: 0.5em 0;
+  font-size: 1rem;
+}
+
+/* Blockquote */
+.tiptap blockquote {
+  border-left: 4px solid #a0aec0;
+  background: var(--input-bg);
+  color: var(--fg);
+  margin: 1.5em 0;
+  padding: 0.75em 1.5em;
+  border-radius: 0.5em;
+  font-style: italic;
+}
+
+/* Horizontal Rule */
+.tiptap hr {
+  border: none;
+  border-top: 1px solid var(--input-bg);
+  margin: 2em 0;
+}
+
+/* Images */
+.tiptap img {
+  max-width: 100%;
+  border-radius: 0.5em;
+  margin: 1.5em 0;
+  display: block;
+}
+
+/* Links */
+.tiptap a {
+  color: var(--link-color, #2563eb);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.tiptap a:hover {
+  color: #1d4ed8;
+}

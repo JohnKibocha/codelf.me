@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import LoadingOverlay from './components/ui/LoadingOverlay';
 import { LoadingProvider, useLoading } from './context/LoadingContext';
+import { SnackbarProvider } from './components/ui/Snackbar';
 
 function App() {
     useAutoTheme();
@@ -52,44 +53,46 @@ function App() {
     };
 
     return (
-        <div className="relative min-h-screen bg-gray-50">
+        <SnackbarProvider>
+            <div className="relative min-h-screen bg-gray-50">
 
-            {!hideSidebar && (
-                <Sidebar
-                    open={sidebarOpen}
-                    collapsed={sidebarCollapsed}
-                    onToggle={handleSidebarToggle}
-                    isMobile={isMobile}
-                />
-            )}
+                {!hideSidebar && (
+                    <Sidebar
+                        open={sidebarOpen}
+                        collapsed={sidebarCollapsed}
+                        onToggle={handleSidebarToggle}
+                        isMobile={isMobile}
+                    />
+                )}
 
-            {!hideSidebar && sidebarOpen && isMobile && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-30 z-20"
-                    onClick={() => setSidebarOpen(false)}
-                    aria-hidden="true"
-                />
-            )}
+                {!hideSidebar && sidebarOpen && isMobile && (
+                    <div
+                        className="fixed inset-0 bg-black bg-opacity-30 z-20"
+                        onClick={() => setSidebarOpen(false)}
+                        aria-hidden="true"
+                    />
+                )}
 
-            {/* Mobile-only expand button (visible when sidebar is closed on mobile) */}
-            {/* Ensure its z-index is lower than the global overlay but higher than main content */}
-            {!hideSidebar && !sidebarOpen && isMobile && (
-                <button
-                    className="fixed top-4 left-4 z-30 bg-[var(--card-bg)] rounded-full shadow-md flex items-center justify-center w-10 h-10 focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)] md:hidden"
-                    onClick={handleSidebarToggle}
-                    aria-label="Open sidebar"
-                >
-                    <Menu className="w-6 h-6 text-[var(--fg)]" />
-                </button>
-            )}
+                {/* Mobile-only expand button (visible when sidebar is closed on mobile) */}
+                {/* Ensure its z-index is lower than the global overlay but higher than main content */}
+                {!hideSidebar && !sidebarOpen && isMobile && (
+                    <button
+                        className="fixed top-4 left-4 z-30 bg-[var(--card-bg)] rounded-full shadow-md flex items-center justify-center w-10 h-10 focus:outline-none focus:ring-2 focus:ring-[var(--button-bg)] md:hidden"
+                        onClick={handleSidebarToggle}
+                        aria-label="Open sidebar"
+                    >
+                        <Menu className="w-6 h-6 text-[var(--fg)]" />
+                    </button>
+                )}
 
-            <div className={`${mainContentMarginClass()} transition-all duration-200`}>
-                <Outlet />
+                <div className={`${mainContentMarginClass()} transition-all duration-200`}>
+                    <Outlet />
+                </div>
+
+                {/* Update: Use context loading overlay */}
+                {isLoading && <LoadingOverlay text={loadingText} />}
             </div>
-
-            {/* Update: Use context loading overlay */}
-            {isLoading && <LoadingOverlay text={loadingText} />}
-        </div>
+        </SnackbarProvider>
     );
 }
 

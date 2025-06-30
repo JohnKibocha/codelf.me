@@ -1,41 +1,68 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const options = ['Active', 'Archived', 'In_Progress'];
+export default function Dropdown({
+  value,
+  onChange,
+  options = [],
+  icon: Icon,
+  placeholder = 'Select',
+  className = '',
+  optionClassName = '',
+  selectedClassName = '',
+  getLabel = opt => opt,
+  getKey = opt => opt,
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
 
-export default function Dropdown({ value, onChange }) {
-    const [open, setOpen] = useState(false);
+  useEffect(() => {
+    function handleClick(e) {
+      if (open && ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
 
-    return (
-        <div className="relative w-full">
-            <button
-                type="button"
-                onClick={() => setOpen(!open)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-[var(--input-bg)] text-[var(--input-fg)] border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[var(--accent)] shadow-sm transition-colors duration-150 hover:border-[var(--accent)] hover:bg-[var(--card-bg)] placeholder-gray-400 dark:placeholder-gray-500"
-                aria-haspopup="listbox"
-                aria-expanded={open}
-            >
-                <span>{value ? value.replace('_', ' ') : 'Select status'}</span>
-                <ChevronDown size={18} className={`ml-2 transition-transform ${open ? 'rotate-180' : ''}`} />
-            </button>
-            {open && (
-                <ul className="absolute z-10 w-full mt-1 bg-[var(--card-bg)] border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto animate-fade-in">
-                    {options.map(opt => (
-                        <li
-                            key={opt}
-                            onClick={() => {
-                                onChange(opt);
-                                setOpen(false);
-                            }}
-                            className={`px-4 py-2 cursor-pointer text-sm transition-colors rounded-md ${value === opt ? 'bg-[var(--button-bg)] text-[var(--button-fg)] font-semibold' : 'hover:bg-[var(--accent-light)] hover:text-[var(--accent-fg)]'}`}
-                            role="option"
-                            aria-selected={value === opt}
-                        >
-                            {opt.replace('_', ' ')}
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </div>
-    );
+  return (
+    <div className={`relative ${className}`} ref={ref} style={{ minWidth: 0, maxWidth: '100%' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-sm border border-gray-400 dark:border-gray-700 bg-[var(--card-bg)] text-[var(--fg)] shadow-sm focus:ring-2 focus:ring-blue-400 transition font-medium min-w-[0] max-w-full whitespace-nowrap"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        style={{ width: 'auto', maxWidth: '100%' }}
+      >
+        {Icon && <Icon size={16} className="mr-1" />}
+        <span className="truncate">{value ? getLabel(value) : placeholder}</span>
+        <ChevronDown size={16} className={`ml-2 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ul className="absolute left-0 mt-2 min-w-[8rem] max-w-xs rounded-xl border border-gray-200 dark:border-gray-700 bg-[var(--card-bg)] text-[var(--fg)] shadow-lg z-10 py-2 flex flex-col gap-1 animate-fade-in">
+          {options.map(opt => {
+            const selected = value === getKey(opt);
+            return (
+              <li key={getKey(opt)}>
+                <button
+                  className={`w-full flex items-center gap-2 px-4 py-2 rounded-full transition font-medium text-left
+                    ${selected
+                      ? 'bg-blue-200 dark:bg-blue-400 text-blue-900 dark:text-blue-100'
+                      : 'hover:bg-blue-100 dark:hover:bg-blue-400 hover:text-blue-800 dark:hover:text-blue-200'}
+                    ${optionClassName} ${selected ? selectedClassName : ''}`}
+                  onClick={() => { onChange(getKey(opt)); setOpen(false); }}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                >
+                  {Icon && <Icon size={16} className="text-blue-400" />}
+                  <span className="truncate">{getLabel(opt)}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 }

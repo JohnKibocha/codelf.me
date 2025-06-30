@@ -7,7 +7,8 @@ import {
     Star,
     Mail,
     User,
-    FilePlus
+    FilePlus,
+    Layers
 } from 'lucide-react';
 
 import CardGrid from '../components/CardGrid';
@@ -19,6 +20,7 @@ import { Databases, Query } from 'appwrite';
 import { useAuth } from '../context/AuthContext';
 import { useLoading } from '../context/LoadingContext';
 import SkeletonLoader from '../components/ui/SkeletonLoader';
+import { useSnackbar } from '../components/ui/Snackbar';
 
 const APPWRITE_DATABASE_ID = 'codelf-cms';
 
@@ -37,6 +39,7 @@ export default function Dashboard() {
     const { user, loading: authLoading } = useAuth();
     const [counts, setCounts] = useState({});
     const [recent, setRecent] = useState([]);
+    const { showSnackbar } = useSnackbar();
 
     // Initial data from custom hook (on app load)
     const {
@@ -58,42 +61,50 @@ export default function Dashboard() {
 
     // Background real-time sync
     const updateLiveData = useCallback(async () => {
-        const newCounts = {};
-        const keys = {
-            projects: 'projects',
-            blogs: 'posts',
-            reviews: 'reviews',
-            messages: 'contacts',
-            drafts: 'posts',
-            views: 'profile',
-        };
+        try {
+            const newCounts = {};
+            const keys = {
+                projects: 'projects',
+                blogs: 'posts',
+                reviews: 'reviews',
+                messages: 'contacts',
+                drafts: 'posts',
+                views: 'profile',
+            };
 
-        for (const [key, collectionId] of Object.entries(keys)) {
-            if (key === 'drafts') {
-                newCounts[key] = await fetchCollectionStats(collectionId, [Query.equal('status', 'draft')]);
-            } else if (key === 'views') {
-                newCounts[key] = await fetchCollectionStats(collectionId);
-            } else {
-                newCounts[key] = await fetchCollectionStats(collectionId);
+            for (const [key, collectionId] of Object.entries(keys)) {
+                if (key === 'drafts') {
+                    newCounts[key] = await fetchCollectionStats(collectionId, [Query.equal('status', 'draft')]);
+                } else if (key === 'views') {
+                    newCounts[key] = await fetchCollectionStats(collectionId);
+                } else {
+                    newCounts[key] = await fetchCollectionStats(collectionId);
+                }
             }
+
+            const activeCollections = ['posts', 'projects', 'reviews', 'contacts'];
+            const combinedRecent = await Promise.all(
+                activeCollections.map(fetchRecentDocuments)
+            );
+
+            const filteredRecent = combinedRecent
+                .flat()
+                .filter(doc => {
+                    const date = new Date(doc.publishedAt || doc.submittedAt || doc.$createdAt);
+                    return date >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                })
+                .sort((a, b) => new Date(b.$createdAt) - new Date(a.$createdAt));
+
+            setCounts(newCounts);
+            setRecent(filteredRecent);
+        } catch (err) {
+            showSnackbar({
+                icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+                message: 'Failed to refresh dashboard data',
+                variant: 'error'
+            });
         }
-
-        const activeCollections = ['posts', 'projects', 'reviews', 'contacts'];
-        const combinedRecent = await Promise.all(
-            activeCollections.map(fetchRecentDocuments)
-        );
-
-        const filteredRecent = combinedRecent
-            .flat()
-            .filter(doc => {
-                const date = new Date(doc.publishedAt || doc.submittedAt || doc.$createdAt);
-                return date >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-            })
-            .sort((a, b) => new Date(b.$createdAt) - new Date(a.$createdAt));
-
-        setCounts(newCounts);
-        setRecent(filteredRecent);
-    }, []);
+    }, [showSnackbar]);
 
     // Fetch fresh data on mount or when user/auth is ready
     useEffect(() => {
@@ -135,8 +146,14 @@ export default function Dashboard() {
     }));
 
     return (
-        <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-8">
-            <h1 className="text-2xl font-semibold text-[var(--fg)] mb-2">Overview</h1>
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 p-6 md:p-10 min-h-screen bg-[var(--screen-bg)] app-screen-bg">
+            <div className="flex flex-col items-center justify-center gap-2 mt-6 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-center text-[var(--fg)] flex items-center gap-2">
+                    <Layers size={28} className="text-blue-500" />
+                    Dashboard
+                </h1>
+                <p className="text-gray-500 text-center text-base md:text-lg">Overview and quick stats for your portfolio.</p>
+            </div>
             <CardGrid data={cardData} />
             <div>
                 <h2 className="text-xl font-semibold mb-4 text-[var(--fg)]">Recent Activity</h2>

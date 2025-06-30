@@ -45,3 +45,21 @@ export async function fetchRecentDocuments(collectionId) {
         return [];
     }
 }
+
+/**
+ * Update an existing blog post document in Appwrite
+ */
+export async function updateBlogPost(blogId, data) {
+    try {
+        const doc = await databases.updateDocument(
+            DB_ID,
+            'posts',
+            blogId,
+            data
+        );
+        return doc;
+    } catch (err) {
+        console.error('Error updating blog post', err);
+        throw err;
+    }
+}

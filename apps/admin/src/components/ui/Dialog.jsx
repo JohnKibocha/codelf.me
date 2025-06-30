@@ -29,7 +29,8 @@ export function Dialog({ open, onClose, title, children }) {
       }
     }
     document.addEventListener('keydown', handleKeyDown);
-    firstEl?.focus();
+    // Remove auto-focus on firstEl to prevent focus jump on every render
+    // firstEl?.focus();
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 

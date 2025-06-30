@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Loader2, Image as ImageIcon, Link as LinkIcon, X } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import Button from './Button.jsx';
+import { Input } from './Input.jsx';
 
 export default function BannerInput({
   bannerPreview,

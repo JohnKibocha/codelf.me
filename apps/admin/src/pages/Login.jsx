@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Account, Client } from 'appwrite'
-import { toast, ToastContainer } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext';
 import { useLoading } from '../context/LoadingContext';
-import 'react-toastify/dist/ReactToastify.css'
+import { useSnackbar } from '../components/ui/Snackbar';
 
 // Appwrite Config
 const client = new Client()
@@ -18,6 +17,7 @@ export default function Login() {
     const navigate = useNavigate();
     const { user, loading: authLoading, setUser } = useAuth();
     const { isLoading, setLoading } = useLoading();
+    const { showSnackbar } = useSnackbar();
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -60,9 +60,17 @@ export default function Login() {
             await account.createEmailPasswordSession(email, password);
             const userData = await account.get();
             setUser(userData); // Update AuthContext
+            showSnackbar({
+                icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
+                message: 'Login successful! Redirecting...'
+            });
             navigate('/dashboard', { replace: true });
         } catch (err) {
-            toast.error(err.message || 'Login failed');
+            showSnackbar({
+                icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+                message: err.message || 'Login failed',
+                variant: 'error'
+            });
         } finally {
             setLoading(false);
         }
@@ -168,7 +176,6 @@ export default function Login() {
                     </form>
                 </div>
             </div>
-            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     )
 }

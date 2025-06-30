@@ -7,10 +7,10 @@ import Button from '../../components/ui/Button';
 import Textarea from '../../components/ui/Textarea';
 import ChipInput from '../../components/ui/ChipInput';
 import Dropdown from '../../components/ui/Dropdown';
-import { toast } from 'react-toastify';
+import { useSnackbar } from '../../components/ui/Snackbar';
 import { X, Upload, Image as ImageIcon, Link as LinkIcon, Loader2, PlusCircle, Pencil, CheckCircle2, XCircle } from 'lucide-react';
 import UniversalForm from '../../components/ui/UniversalForm';
-import BannerInput from './BannerInput';
+import BannerInput from '../../components/ui/BannerInput.jsx';
 
 const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = 'projects';
@@ -34,6 +34,7 @@ export default function ProjectForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
 
   const [form, setForm] = useState(initialState);
   const [bannerFile, setBannerFile] = useState(null);
@@ -53,9 +54,13 @@ export default function ProjectForm() {
             setForm({ ...doc, stack: doc.stack || [] });
             setBannerPreview(doc.banner || defaultBanner);
           })
-          .catch(() => toast.error('Failed to load project'));
+          .catch(() => showSnackbar({
+            icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+            message: 'Failed to load project',
+            variant: 'error'
+          }));
     }
-  }, [id, isEdit]);
+  }, [id, isEdit, showSnackbar]);
 
   useEffect(() => {
     if (bannerFile) {
@@ -97,26 +102,47 @@ export default function ProjectForm() {
 
   const handleBannerUrlChange = (e) => {
     const url = e.target.value;
+    setBannerPreview(url);
     setForm((f) => ({ ...f, banner: url }));
-    setBannerPreview(url || defaultBanner);
   };
 
   const handleBannerUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setBannerLoading(true);
-      try {
-        const uploaded = await storage.createFile(BUCKET_ID, ID.unique(), file);
-        const url = storage.getFilePreview(BUCKET_ID, uploaded.$id);
-        setForm((f) => ({ ...f, banner: url }));
-        toast.success('Banner uploaded!');
-      } catch {
-        toast.error('Failed to upload');
-      } finally {
-        setBannerLoading(false);
-      }
+    const file = e?.target?.files?.[0];
+    if (!file || !(file instanceof File)) {
+      showSnackbar({
+        icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+        message: 'No file selected or invalid file type',
+        variant: 'error'
+      });
+      return;
+    }
+    setBannerLoading(true);
+    try {
+      const uploaded = await storage.createFile(BUCKET_ID, ID.unique(), file);
+      const url = storage.getFilePreview(BUCKET_ID, uploaded.$id);
+      setBannerPreview(url);
+      setForm((f) => ({ ...f, banner: url }));
+      showSnackbar({
+        icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
+        message: 'Banner uploaded!'
+      });
+    } catch (err) {
+      showSnackbar({
+        icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+        message: 'Failed to upload image.',
+        variant: 'error'
+      });
+    } finally {
+      setBannerLoading(false);
     }
   };
+
+  const handleRemoveBanner = () => {
+    setBannerPreview('');
+    setForm((f) => ({ ...f, banner: '' }));
+  };
+
+  const handleToggleBannerUrlInput = () => setShowBannerUrlInput(v => !v);
 
   // UniversalForm fields schema
   const fields = [
@@ -163,35 +189,50 @@ export default function ProjectForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (Object.keys(errors).length > 0) {
-      toast.error('Please fix validation errors');
+    setSubmitting(true);
+    setErrors({});
+    // Validation
+    if (!form.title.trim()) {
+      setErrors({ title: 'Title is required' });
+      showSnackbar({
+        icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+        message: 'Project title is required',
+        variant: 'error'
+      });
+      setSubmitting(false);
       return;
     }
-    setSubmitting(true);
     try {
-      const payload = filterPayload({
-        ...form,
-        stack: form.stack.filter(Boolean),
-      });
+      const payload = filterPayload(form);
+      console.log('Submitting payload:', payload); // Debugging
       if (isEdit) {
+        // Overwrite: updateDocument with all fields, replacing existing data
         await databases.updateDocument(DB_ID, COLLECTION_ID, id, payload);
-        setResultSuccess(true);
+        showSnackbar({
+          icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
+          message: 'Project updated!'
+        });
       } else {
         await databases.createDocument(DB_ID, COLLECTION_ID, ID.unique(), payload);
-        setResultSuccess(true);
+        showSnackbar({
+          icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
+          message: 'Project created!'
+        });
       }
-      setShowResultDialog(true);
+      navigate('/projects');
     } catch (err) {
-      setResultSuccess(false);
-      setShowResultDialog(true);
-      toast.error('Error saving project');
+      showSnackbar({
+        icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" /></svg>,
+        message: 'Failed to save project',
+        variant: 'error'
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="py-8">
+    <div className="min-h-screen w-full bg-[var(--bg)] transition-colors duration-300 py-8">
       <UniversalForm
         fields={fields}
         values={form}
@@ -224,11 +265,21 @@ export default function ProjectForm() {
         </div>
 
         <div className="flex gap-2 mt-6">
-          <Button type="submit" disabled={submitting} className="px-6 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700">
-            {submitting ? 'Saving...' : isEdit ? 'Update Project' : 'Create Project'}
+          <Button type="submit" disabled={submitting} className="px-4 py-2 rounded-full text-sm flex items-center gap-2 min-w-[130px] justify-center">
+            {submitting ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : isEdit ? (
+              <>
+                <Pencil size={18} /> Update Project
+              </>
+            ) : (
+              <>
+                <PlusCircle size={18} /> Create Project
+              </>
+            )}
           </Button>
-          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+          <Button type="button" variant="outline" onClick={() => navigate(-1)} className="px-4 py-2 rounded-full text-sm min-w-[100px]">
+            <X size={16} className="mr-1" /> Cancel
           </Button>
         </div>
       </UniversalForm>

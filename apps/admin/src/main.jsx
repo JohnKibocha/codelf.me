@@ -8,6 +8,7 @@ import App from './App'
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProjectsList from "./pages/admin/ProjectsList.jsx";
 import RoutesComponent from './routes/Routes';
+import { SnackbarProvider } from './components/ui/Snackbar.jsx';
 
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -27,21 +28,23 @@ const ProtectedRoute = ({ children }) => {
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <AuthProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/*" element={<App />}> {/* Use /* to match all nested routes */}
-                        <Route
-                            path="*"
-                            element={
-                                <ProtectedRoute>
-                                    <RoutesComponent />
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Route>
-                </Routes>
-            </BrowserRouter>
+            <SnackbarProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/*" element={<App />}> {/* Use /* to match all nested routes */}
+                            <Route
+                                path="*"
+                                element={
+                                    <ProtectedRoute>
+                                        <RoutesComponent />
+                                    </ProtectedRoute>
+                                }
+                            />
+                        </Route>
+                    </Routes>
+                </BrowserRouter>
+            </SnackbarProvider>
         </AuthProvider>
     </React.StrictMode>
 )
