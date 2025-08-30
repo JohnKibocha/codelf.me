@@ -1,3 +1,4 @@
+import PageBackNav from '../components/ui/PageBackNav';
 // src/components/Dashboard.jsx
 import { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
@@ -35,6 +36,7 @@ const cardMeta = [
 ];
 
 export default function Dashboard() {
+    // ...existing code...
     const { setLoading } = useLoading();
     const { user, loading: authLoading } = useAuth();
     const [counts, setCounts] = useState({});
@@ -146,7 +148,8 @@ export default function Dashboard() {
     }));
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 p-6 md:p-10 min-h-screen bg-[var(--screen-bg)] app-screen-bg">
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 p-6 md:p-10 min-h-screen bg-[var(--screen-bg)] app-screen-bg" style={{position:'relative'}}>
+            <PageBackNav fallback="/" label="Back to Home" />
             <div className="flex flex-col items-center justify-center gap-2 mt-6 mb-2">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-center text-[var(--fg)] flex items-center gap-2">
                     <Layers size={28} className="text-blue-500" />

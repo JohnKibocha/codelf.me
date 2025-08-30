@@ -7,11 +7,12 @@ import {Badge} from '../../components/ui/Badge';
 import Dialog from '../../components/ui/Dialog';
 import LoadingOverlay from '../../components/ui/LoadingOverlay';
 import SearchBar from '../../components/ui/SearchBar';
-import {Edit3, FileText, Filter, Info, Layers, Pencil, Plus, Search, Tag, Trash2} from 'lucide-react';
-import Dropdown from '../../components/ui/Dropdown';
+import {Edit3, FileText, Filter as FilterIcon, Info, Layers, Pencil, Plus, Search, Tag, Trash2} from 'lucide-react';
+import Filter from '../../components/ui/Filter';
 import BlogMetadataForm from './BlogMetadataForm';
 import {useSnackbar} from '../../components/ui/Snackbar';
 import {useNavigate} from 'react-router-dom';
+import PageBackNav from '../../components/ui/PageBackNav';
 
 const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = 'posts';
@@ -136,33 +137,39 @@ export default function BlogManager() {
             label: 'Title',
             render: row => (
                 <span className="font-medium text-[var(--fg)] flex items-center gap-2 group relative">
-          <Layers size={16} className="text-blue-500"/>
+                    <Layers size={16} className="text-blue-500"/>
                     {row.title}
                     <button
-                        className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 rounded-full p-1 shadow hover:bg-blue-100 dark:hover:bg-blue-800"
+                        className="ml-3 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border border-blue-300 dark:border-blue-700 shadow hover:bg-blue-200 dark:hover:bg-blue-800 transition text-xs font-semibold flex items-center gap-1"
                         title="Preview"
                         onClick={e => {
                             e.stopPropagation();
                             navigate(`/blogs/${row.$id}/preview`);
                         }}
                     >
-            <FileText size={16} className="text-blue-500"/>
-          </button>
-        </span>
+                        <FileText size={18} className="text-blue-500"/>
+                        Preview
+                    </button>
+                </span>
             )
         },
         {
             key: 'category',
             label: 'Category',
-            render: row => <Badge variant="outline" className="flex items-center gap-1"><Tag size={14}
-                                                                                             className="mr-1 text-purple-500"/>{row.category}
-            </Badge>
+            render: row => (
+                <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-700 max-w-[120px] truncate">
+                    {row.category || '-'}
+                </span>
+            )
         },
         {
             key: 'status',
             label: 'Status',
-            render: row => <Badge variant={row.status === 'published' ? 'default' : 'outline'}
-                                  className={row.status === 'published' ? 'bg-green-500' : 'bg-yellow-400 text-yellow-900 border-yellow-300'}>{row.status}</Badge>
+            render: row => (
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border max-w-[120px] truncate ${row.status === 'published' ? 'bg-green-100 text-green-700 border-green-300 dark:bg-green-900 dark:text-green-200 dark:border-green-700' : 'bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700'}`}>
+                    {row.status || '-'}
+                </span>
+            )
         },
         {
             key: 'publishedAt',
@@ -186,6 +193,7 @@ export default function BlogManager() {
     return (
         <div
             className="p-0 md:p-8 min-h-screen w-full flex flex-col items-center justify-start bg-[var(--screen-bg)] app-screen-bg">
+            <PageBackNav fallback="/dashboard" label="Back" />
             {loading && <LoadingOverlay/>}
             <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 px-2 sm:px-0">
                 {/* Title section - match ProjectsList style */}
@@ -198,36 +206,39 @@ export default function BlogManager() {
                         with ease.</p>
                 </div>
                 {/* Search and filters row */}
-                <div className="flex flex-col gap-2 w-full">
-                    <div className="flex-1 mb-2">
+                <div className="flex flex-col gap-6 w-full">
+                    {/* Search Bar */}
+                    <div className="w-full">
                         <SearchBar
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             onSearch={handleSearch}
                             searching={searching}
                             placeholder="Search blog posts by any field..."
-                            inputClassName="rounded-full border border-gray-200 dark:border-gray-700 px-5 py-4 shadow-sm focus:ring-2 focus:ring-blue-400 bg-[var(--card-bg)] text-[var(--fg)] min-h-[56px] text-base"
-                            buttonClassName="bg-blue-500 hover:bg-blue-600 text-blue-100 dark:text-white"
-                            iconSize={22}
-                            icon={<Search size={22} className="text-blue-500 dark:text-blue-200"/>}
+                            variant="modern"
+                            size="large"
+                            autoSearch={false}
+                            debounceMs={300}
                         />
                     </div>
-                    {/* Filters below search bar, glass UI */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 w-full"
-                         style={{position: 'relative', zIndex: 10}}>
-                        <div className="flex gap-2 items-center flex-wrap min-w-0">
-                            <Dropdown
+                    
+                    {/* Filters and Actions Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+                        {/* Filters Section */}
+                        <div className="flex gap-3 items-center flex-wrap min-w-0">
+                            <Filter
                                 value={status}
                                 onChange={setStatus}
                                 options={statuses}
-                                icon={Filter}
+                                icon={FilterIcon}
                                 placeholder="All Statuses"
                                 getLabel={opt => opt === 'all' ? 'All Statuses' : opt.charAt(0).toUpperCase() + opt.slice(1)}
                                 getKey={opt => opt}
                                 width="w-44"
-                                dropdownClassName="z-30"
+                                variant="outlined"
+                                size="medium"
                             />
-                            <Dropdown
+                            <Filter
                                 value={category}
                                 onChange={setCategory}
                                 options={categories}
@@ -236,10 +247,13 @@ export default function BlogManager() {
                                 getLabel={opt => opt === 'all' ? 'All Categories' : opt}
                                 getKey={opt => opt}
                                 width="w-44"
-                                dropdownClassName="z-30"
+                                variant="outlined"
+                                size="medium"
                             />
                         </div>
-                        <div className="flex justify-center sm:justify-end w-full sm:w-auto mt-2 sm:mt-0">
+                        
+                        {/* Action Buttons Section */}
+                        <div className="flex justify-center sm:justify-end w-full sm:w-auto">
                             <Button
                                 onClick={() => {
                                     setShowDialog(true);
@@ -247,7 +261,7 @@ export default function BlogManager() {
                                     setSelectedBlog(null);
                                 }}
                                 icon={<Plus size={18}/>}
-                                className="rounded-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow hover:scale-105 transition-transform w-full sm:w-auto max-w-xs mx-auto sm:mx-0"
+                                className="rounded-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto max-w-xs mx-auto sm:mx-0"
                             >
                                 New Blog Post
                             </Button>
@@ -292,9 +306,9 @@ export default function BlogManager() {
                 <BlogMetadataForm
                     onClose={() => setShowDialog(false)}
                     onSuccess={fetchBlogs}
-                    onCreated={meta => {
+                    onCreated={doc => {
                         setShowDialog(false);
-                        navigate(`/blogs/new/edit`, {state: {meta}});
+                        navigate(`/blogs/${doc.$id}/edit`, {state: {meta: doc}});
                     }}
                 />
             </Dialog>

@@ -1,25 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
-export default function Dropdown({
+/**
+ * Universal Filter Component
+ * 
+ * A modern, accessible filter dropdown with excellent contrast in both light and dark modes.
+ * Features:
+ * - High contrast color schemes for better accessibility
+ * - Smooth animations and transitions
+ * - Responsive design
+ * - Keyboard navigation support
+ * - Clear visual hierarchy
+ */
+export default function Filter({
   value,
   onChange,
   options = [],
   icon: Icon,
-  placeholder = 'Select',
+  placeholder = 'Filter',
   className = '',
-  optionClassName = '',
-  selectedClassName = '',
+  width = 'w-auto',
+  size = 'medium', // 'small', 'medium', 'large'
+  variant = 'default', // 'default', 'outlined', 'filled'
   getLabel = opt => opt,
   getKey = opt => opt,
   disabled = false,
-  size = 'medium',
-  variant = 'default',
 }) {
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const ref = useRef();
 
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClick(e) {
       if (open && ref.current && !ref.current.contains(e.target)) {
@@ -89,7 +100,7 @@ export default function Dropdown({
     }
   };
 
-  // Variant styles with improved contrast
+  // Variant styles
   const variantClasses = {
     default: {
       button: 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500',
@@ -108,25 +119,29 @@ export default function Dropdown({
   const currentSize = sizeClasses[size];
   const currentVariant = variantClasses[variant];
 
+  const buttonClasses = `
+    inline-flex items-center justify-between rounded-lg font-medium
+    border transition-all duration-200 ease-in-out
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
+    disabled:opacity-50 disabled:cursor-not-allowed
+    min-w-0 max-w-full
+    ${currentSize.button}
+    ${currentVariant.button}
+    ${width}
+    ${className}
+  `.trim();
+
   return (
-    <div className={`relative ${className}`} ref={ref} style={{ minWidth: 0, maxWidth: '100%' }}>
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => !disabled && setOpen(o => !o)}
         onKeyDown={handleKeyDown}
         disabled={disabled}
-        className={`
-          inline-flex items-center justify-between rounded-lg font-medium
-          border transition-all duration-200 ease-in-out
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
-          disabled:opacity-50 disabled:cursor-not-allowed
-          min-w-0 max-w-full
-          ${currentSize.button}
-          ${currentVariant.button}
-        `}
+        className={buttonClasses}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Select ${placeholder}`}
+        aria-label={`Filter by ${placeholder}`}
       >
         <div className="flex items-center min-w-0 flex-1">
           {Icon && (
@@ -176,7 +191,6 @@ export default function Dropdown({
                         ? 'bg-blue-600 text-white dark:bg-blue-500 dark:text-white'
                         : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                     }
-                    ${optionClassName} ${selected ? selectedClassName : ''}
                   `}
                   onClick={() => {
                     onChange(optionKey);
@@ -198,12 +212,19 @@ export default function Dropdown({
                       }`} 
                     />
                   )}
-                  <span className="truncate flex-1">{getLabel(opt)}</span>
+                  <span className="truncate">{getLabel(opt)}</span>
                   {selected && (
-                    <Check 
-                      size={currentSize.icon} 
-                      className="ml-2 text-white flex-shrink-0" 
-                    />
+                    <svg 
+                      className="ml-auto h-4 w-4 text-white flex-shrink-0" 
+                      viewBox="0 0 20 20" 
+                      fill="currentColor"
+                    >
+                      <path 
+                        fillRule="evenodd" 
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+                        clipRule="evenodd" 
+                      />
+                    </svg>
                   )}
                 </button>
               </li>

@@ -48,7 +48,7 @@ function App() {
         if (hideSidebar) return '';
         if (isMobile) return '';
         if (sidebarOpen && !sidebarCollapsed) return 'md:ml-64';
-        if (sidebarOpen && sidebarCollapsed) return 'md:ml-20';
+        if (sidebarOpen && sidebarCollapsed) return 'md:ml-24';
         return '';
     };
 

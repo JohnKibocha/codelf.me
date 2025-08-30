@@ -3,9 +3,10 @@ import { databases, storage } from '../../lib/appwrite/appwrite';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import ChipInput from '../../components/ui/ChipInput';
+import Tag from '../../components/ui/Tag';
 import Dropdown from '../../components/ui/Dropdown';
 import Textarea from '../../components/ui/Textarea';
-import { Info, Tag, Image as ImageIcon, Hash, FileText, XCircle, CheckCircle, Plus } from 'lucide-react';
+import { Info, Tag as TagIcon, Image as ImageIcon, Hash, FileText, XCircle, CheckCircle, Plus } from 'lucide-react';
 import BannerInput from '../../components/ui/BannerInput.jsx';
 import Dialog from '../../components/ui/Dialog';
 import SkeletonLoader from '../../components/ui/SkeletonLoader';
@@ -15,7 +16,7 @@ const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const POSTS_ID = 'posts';
 const CATEGORIES_ID = 'categories';
 
-const MEDIA_BUCKET = 'media';
+const MEDIA_BUCKET = 'codelf.me-media';
 
 const MATERIAL_COLORS = [
   '#F44336', // Red
@@ -93,21 +94,32 @@ export default function BlogMetadataForm({ blog, onClose, onSuccess, onCreated }
         if (onSuccess) onSuccess();
         if (onClose) onClose();
       } else {
-        // Add mode: create a new blog post using Appwrite update logic (simulate draft creation)
-        // First, create a blank document
+        // Add mode: create a new blog post as draft
         const doc = await databases.createDocument(DB_ID, POSTS_ID, 'unique()', {
-          title, tags, coverImage, category, status: 'draft'
+          title, 
+          tags, 
+          coverImage, 
+          category, 
+          status: 'draft',
+          content: '', // Initialize with empty content
+          excerpt: '',
+          readTime: 0,
+          publishedAt: null
         });
+        
         showSnackbar({
           icon: <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>,
-          message: 'Blog created! Redirecting...'
+          message: 'Blog created! Opening editor...'
         });
-        // Now update the document with the same logic as edit (simulate update logic)
-        await databases.updateDocument(DB_ID, POSTS_ID, doc.$id, {
-          title, tags, coverImage, category
-        });
-        // Instead of returning to blog manager, navigate to canvas/editor for this blog
-        window.location.href = `/blogs/${doc.$id}/edit`;
+
+        // Call onCreated with the new document to handle navigation
+        if (onCreated) {
+          onCreated(doc);
+        } else {
+          // Fallback to onSuccess if onCreated is not provided
+          if (onSuccess) onSuccess();
+          if (onClose) onClose();
+        }
         return;
       }
     } catch (e) {
@@ -308,7 +320,7 @@ export default function BlogMetadataForm({ blog, onClose, onSuccess, onCreated }
         <Button type="button" variant="outline" onClick={onClose} disabled={loading} className="flex items-center justify-center gap-2 w-1/2 py-3 rounded-lg">
           <XCircle size={18} /> Cancel
         </Button>
-        <Button type="submit" variant="primary" loading={loading} className="flex items-center justify-center gap-2 w-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-3 rounded-lg shadow hover:scale-[1.02] transition-all">
+        <Button type="submit" variant="primary" loading={loading} className="flex items-center justify-center gap-2 w-1/2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
           <CheckCircle size={18} /> Continue
         </Button>
       </div>
@@ -333,6 +345,13 @@ export default function BlogMetadataForm({ blog, onClose, onSuccess, onCreated }
               ))}
             </div>
           </div>
+            <label className="block mb-2 font-semibold text-sm text-gray-700 dark:text-gray-200">Tags</label>
+            <ChipInput value={tags} onChange={setTags} placeholder="Add tag and press Enter" chipColor="blue" chipVariant="tag" />
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {tags.map((tag, i) => <Tag key={i} color="blue" size="sm">{tag}</Tag>)}
+              </div>
+            )}
           <div className="flex flex-row gap-2 mt-2 w-full justify-between">
             <Button type="button" variant="outline" onClick={() => setShowAddCategory(false)} className="flex-1">Cancel</Button>
             <Button type="button" variant="primary" className="flex-1" onClick={handleAddCategory}>Add</Button>

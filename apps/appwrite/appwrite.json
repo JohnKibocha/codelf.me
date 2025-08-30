@@ -486,12 +486,52 @@
     ],
     "buckets": [
         {
-            "$id": "media",
+            "$id": "codelf.me-media",
             "$permissions": [
-                "read(\"guests\")"
+                "read(\"guests\")",
+                "create(\"user:JohnKibocha\")",
+                "read(\"user:JohnKibocha\")",
+                "update(\"user:JohnKibocha\")",
+                "delete(\"user:JohnKibocha\")"
             ],
             "fileSecurity": false,
-            "name": "Media Uploads",
+            "name": "Codelf Media Uploads",
+            "enabled": true,
+            "maximumFileSize": 5000000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
+            "$id": "codelf.me-media",
+            "$permissions": [
+                "read(\"guests\")",
+                "create(\"user:JohnKibocha\")",
+                "read(\"user:JohnKibocha\")",
+                "update(\"user:JohnKibocha\")",
+                "delete(\"user:JohnKibocha\")"
+            ],
+            "fileSecurity": false,
+            "name": "Codelf Media Uploads",
+            "enabled": true,
+            "maximumFileSize": 5000000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
+            "$id": "media",
+            "$permissions": [
+                "read(\"guests\")",
+                "create(\"user:JohnKibocha\")",
+                "read(\"user:JohnKibocha\")",
+                "update(\"user:JohnKibocha\")",
+                "delete(\"user:JohnKibocha\")"
+            ],
+            "fileSecurity": false,
+            "name": "Codelf Media Uploads",
             "enabled": true,
             "maximumFileSize": 5000000000,
             "allowedFileExtensions": [],

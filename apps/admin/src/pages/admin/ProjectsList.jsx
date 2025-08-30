@@ -1,18 +1,20 @@
+import PageBackNav from '../../components/ui/PageBackNav';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { databases } from './../../lib/appwrite/appwrite';
 import { Query, ID } from 'appwrite';
 import { Button } from './../../components/ui/Button';
 import { Input } from './../../components/ui/Input';
-import { Badge } from './../../components/ui/Badge';
+import Tag from './../../components/ui/Tag';
+import ChipInput from './../../components/ui/ChipInput';
 import { Card, CardContent } from './../../components/ui/Card';
 import { useSnackbar } from '../../components/ui/Snackbar';
-import { Plus, Search, Pencil, Trash2, ExternalLink, Github, Globe, Smartphone, Apple, Layers, Filter, Tag } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, ExternalLink, Github, Globe, Smartphone, Apple, Layers, Filter as FilterIcon, Tag as TagIcon } from 'lucide-react';
 import { Dialog } from './../../components/ui/Dialog';
 import { useLoading } from './../../context/LoadingContext';
 import SkeletonLoader from './../../components/ui/SkeletonLoader';
 import SearchBar from '../../components/ui/SearchBar';
-import Dropdown from '../../components/ui/Dropdown';
+import Filter from '../../components/ui/Filter';
 
 const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = 'projects';
@@ -35,51 +37,10 @@ function displayStatus(status) {
     return status;
 }
 
-// Add a ChipInput for stack tags (copied from ProjectForm)
-function ChipInput({ value, onChange, placeholder }) {
-  const [input, setInput] = useState('');
-  const tags = value || [];
 
-  function handleInput(e) {
-    setInput(e.target.value);
-  }
-
-  function handleKeyDown(e) {
-    if ((e.key === 'Enter' || e.key === ',') && input.trim()) {
-      e.preventDefault();
-      if (!tags.includes(input.trim())) {
-        onChange([...tags, input.trim()]);
-      }
-      setInput('');
-    } else if (e.key === 'Backspace' && !input && tags.length) {
-      onChange(tags.slice(0, -1));
-    }
-  }
-
-  function removeTag(idx) {
-    onChange(tags.filter((_, i) => i !== idx));
-  }
-
-  return (
-    <div className="flex flex-wrap items-center gap-2 border rounded px-2 py-2 bg-[var(--input-bg)]">
-      {tags.map((tag, i) => (
-        <span key={i} className="flex items-center bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-2 py-1 rounded-full text-xs font-medium">
-          {tag}
-          <button type="button" className="ml-1 text-blue-500 hover:text-red-500" onClick={() => removeTag(i)} aria-label="Remove tag">&times;</button>
-        </span>
-      ))}
-      <input
-        className="flex-1 min-w-[80px] bg-transparent outline-none text-[var(--input-fg)]"
-        value={input}
-        onChange={handleInput}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-      />
-    </div>
-  );
-}
 
 export default function ProjectsList() {
+  // ...existing code...
   const navigate = useNavigate();
   const { isLoading, setLoading, setLoadingText } = useLoading();
   const { showSnackbar } = useSnackbar();
@@ -249,7 +210,8 @@ export default function ProjectsList() {
   }, [showStatusList]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 p-6 md:p-10 min-h-screen bg-[var(--screen-bg)] app-screen-bg">
+    <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 p-6 md:p-10 min-h-screen bg-[var(--screen-bg)] app-screen-bg" style={{position:'relative'}}>
+      <PageBackNav fallback="/dashboard" label="Back" />
       <div className="flex flex-col items-center justify-center gap-2 mt-6 mb-2">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-center text-[var(--fg)] flex items-center gap-2">
           <Layers size={28} className="text-blue-500" />
@@ -258,24 +220,31 @@ export default function ProjectsList() {
         <p className="text-gray-500 text-center text-base md:text-lg">Manage your portfolio projects here.</p>
       </div>
       {/* Search and filters row */}
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex-1">
+      <div className="flex flex-col gap-6 w-full">
+        {/* Search Bar */}
+        <div className="w-full">
           <SearchBar
             value={search}
             onChange={e => setSearch(e.target.value)}
             onSearch={handleSearch}
             searching={searching}
-            placeholder="Search projects by title..."
+            placeholder="Search projects by title, description, stack..."
+            variant="modern"
+            size="large"
+            autoSearch={false}
+            debounceMs={300}
           />
         </div>
-        <div className="flex flex-row items-center justify-between gap-2 w-full">
-          {/* Filters to the left */}
-          <div className="flex gap-2 items-center">
-            <Dropdown
+        
+        {/* Filters and Actions Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+          {/* Filters Section */}
+          <div className="flex gap-3 items-center flex-wrap min-w-0">
+            <Filter
               value={statusFilter}
               onChange={setStatusFilter}
               options={STATUS_OPTIONS.map(opt => opt.value)}
-              icon={Filter}
+              icon={FilterIcon}
               placeholder="All Statuses"
               getLabel={opt => {
                 const found = STATUS_OPTIONS.find(o => o.value === opt);
@@ -283,13 +252,22 @@ export default function ProjectsList() {
               }}
               getKey={opt => opt}
               width="w-44"
+              variant="outlined"
+              size="medium"
             />
             {/* Category filter can be added here in the future */}
           </div>
-          {/* Add button to the right */}
-          <Button onClick={() => navigate('/projects/new')} icon={<Plus size={18} />} className="rounded-full px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow hover:scale-105 transition-transform">
-            New Project
-          </Button>
+          
+          {/* Action Buttons Section */}
+          <div className="flex justify-center sm:justify-end w-full sm:w-auto">
+            <Button 
+              onClick={() => navigate('/projects/new')} 
+              icon={<Plus size={18} />} 
+              className="rounded-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 w-full sm:w-auto max-w-xs mx-auto sm:mx-0"
+            >
+              New Project
+            </Button>
+          </div>
         </div>
       </div>
       {/* Projects Grid */}
@@ -320,14 +298,30 @@ export default function ProjectsList() {
                   <div className="text-gray-700 dark:text-gray-300 text-sm mb-1">{project.description}</div>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {(Array.isArray(project.stack) ? project.stack : (project.stack || '').split(',')).filter(Boolean).map((tech, i) => (
-                      <span key={i} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-2 py-1 rounded-full text-xs font-medium">{tech.trim()}</span>
+                      <Tag key={i} color="blue" size="sm">{tech.trim()}</Tag>
                     ))}
                   </div>
                   <div className="flex flex-wrap gap-3 items-center text-xs">
-                    {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"><Github size={16}/>GitHub</a>}
-                    {project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"><Globe size={16}/>Live</a>}
-                    {project.androidUrl && <a href={project.androidUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"><Smartphone size={16}/>Android</a>}
-                    {project.iosUrl && <a href={project.iosUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:underline"><Apple size={16}/>iOS</a>}
+                    {project.githubUrl && (
+                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                        <Tag color="gray" size="sm" icon={<Github size={14}/>} className="hover:bg-gray-200 dark:hover:bg-gray-700 transition">GitHub</Tag>
+                      </a>
+                    )}
+                    {project.liveUrl && (
+                      <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                        <Tag color="green" size="sm" icon={<Globe size={14}/>} className="hover:bg-green-100 dark:hover:bg-green-900 transition">Live</Tag>
+                      </a>
+                    )}
+                    {project.androidUrl && (
+                      <a href={project.androidUrl} target="_blank" rel="noopener noreferrer">
+                        <Tag color="blue" size="sm" icon={<Smartphone size={14}/>} className="hover:bg-blue-100 dark:hover:bg-blue-900 transition">Android</Tag>
+                      </a>
+                    )}
+                    {project.iosUrl && (
+                      <a href={project.iosUrl} target="_blank" rel="noopener noreferrer">
+                        <Tag color="purple" size="sm" icon={<Apple size={14}/>} className="hover:bg-purple-100 dark:hover:bg-purple-900 transition">iOS</Tag>
+                      </a>
+                    )}
                   </div>
                   <div className="flex gap-2 mt-3">
                     <Button size="sm" variant="outline" className="flex items-center gap-1 px-3 py-2 rounded-full text-sm min-w-[90px] justify-center" onClick={() => navigate(`/projects/${project.$id}/edit`)}>

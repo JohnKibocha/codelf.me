@@ -13,13 +13,73 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
+import Color from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
+import Dropcursor from '@tiptap/extension-dropcursor';
+import Gapcursor from '@tiptap/extension-gapcursor';
+import Focus from '@tiptap/extension-focus';
+import Placeholder from '@tiptap/extension-placeholder';
 import { Markdown } from 'tiptap-markdown';
 import { Extension } from '@tiptap/core';
 import MarkdownIt from 'markdown-it';
 import { lowlight } from 'lowlight';
+import { Math, Admonition, Footnote, Emoji, AdvancedHighlight } from './extensions/AdvancedExtensions.js';
+import { 
+  CollapsibleSection, 
+  StyledHorizontalRule, 
+  AdvancedCodeBlock 
+} from './extensions/EnhancedExtensions.js';
+// Temporarily disabled advanced features
+// import { 
+//   MermaidDiagram, 
+//   KaTeXMath, 
+//   AdvancedTable, 
+//   CodeLanguagePicker, 
+//   WordCounter, 
+//   AutoSave, 
+//   FocusMode 
+// } from './extensions/AdvancedFeatures.js';
+import CharacterCount from '@tiptap/extension-character-count';
+import Typography from '@tiptap/extension-typography';
 import './canvas.css';
+import '../styles/medium-like.css';
+import '../styles/syntax-highlighting.css';
+import './extensions/advanced-features.css';
 import ArticlePreview from './ArticlePreview';
-import 'highlight.js/styles/atom-one-dark.css';
+
+// Import languages for syntax highlighting
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import python from 'highlight.js/lib/languages/python';
+import java from 'highlight.js/lib/languages/java';
+import cpp from 'highlight.js/lib/languages/cpp';
+import css from 'highlight.js/lib/languages/css';
+import html from 'highlight.js/lib/languages/xml';
+import json from 'highlight.js/lib/languages/json';
+import bash from 'highlight.js/lib/languages/bash';
+import sql from 'highlight.js/lib/languages/sql';
+import php from 'highlight.js/lib/languages/php';
+import go from 'highlight.js/lib/languages/go';
+import rust from 'highlight.js/lib/languages/rust';
+import yaml from 'highlight.js/lib/languages/yaml';
+
+// Register languages
+lowlight.registerLanguage('javascript', javascript);
+lowlight.registerLanguage('typescript', typescript);
+lowlight.registerLanguage('python', python);
+lowlight.registerLanguage('java', java);
+lowlight.registerLanguage('cpp', cpp);
+lowlight.registerLanguage('css', css);
+lowlight.registerLanguage('html', html);
+lowlight.registerLanguage('json', json);
+lowlight.registerLanguage('bash', bash);
+lowlight.registerLanguage('sql', sql);
+lowlight.registerLanguage('php', php);
+lowlight.registerLanguage('go', go);
+lowlight.registerLanguage('rust', rust);
+lowlight.registerLanguage('yaml', yaml);
 
 const md = new MarkdownIt();
 
@@ -38,30 +98,119 @@ const TableNavigation = Extension.create({
 const Canvas = ({ value, onChange, preview, theme, onRequestEdit, editor, setEditor, meta, title, date, category, tags, blogId }) => {
   const tiptapEditor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] }, codeBlock: false }),
-      CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'js' }),
+      StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5, 6] }, codeBlock: false }),
+      CodeBlockLowlight.configure({ 
+        lowlight, 
+        defaultLanguage: 'js',
+        HTMLAttributes: {
+          class: 'medium-code-block',
+        },
+      }),
       Markdown.configure({
         html: true,
         tightLists: true,
         bulletListMarker: '-',
         transformPastedText: true,
         transformCopiedText: true,
-        // Enable input rules for live markdown shortcuts
         inputRules: true,
         shortcuts: true,
       }),
       Underline,
-      Highlight,
+      AdvancedHighlight,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      Link.configure({ openOnClick: false }),
-      Image.configure({ allowBase64: true }),
-      Table.configure({ resizable: true }),
+      TaskList.configure({
+        HTMLAttributes: {
+          class: 'medium-task-list',
+        },
+      }),
+      TaskItem.configure({ 
+        nested: true,
+        HTMLAttributes: {
+          class: 'medium-task-item',
+        },
+      }),
+      Link.configure({ 
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'medium-link',
+        },
+      }),
+      Image.configure({ 
+        allowBase64: true,
+        HTMLAttributes: {
+          class: 'medium-image',
+        },
+      }),
+      Table.configure({ 
+        resizable: true,
+        HTMLAttributes: {
+          class: 'medium-table',
+        },
+      }),
       TableRow,
       TableCell,
       TableHeader,
       TableNavigation,
+      // New advanced extensions
+      Superscript,
+      Subscript,
+      Color,
+      TextStyle,
+      Dropcursor.configure({
+        color: 'var(--medium-accent)',
+        width: 2,
+      }),
+      Gapcursor,
+      Focus.configure({
+        className: 'medium-focus',
+        mode: 'all',
+      }),
+      Placeholder.configure({
+        placeholder: ({ node }) => {
+          if (node.type.name === 'heading') {
+            return 'Write a compelling headline...';
+          }
+          return 'Start writing your story...';
+        },
+        emptyEditorClass: 'medium-placeholder',
+      }),
+      // Custom extensions
+      Math,
+      Admonition,
+      Footnote,
+      Emoji,
+      AdvancedHighlight,
+      // DefinitionList, // Temporarily disabled due to schema issues
+      // DefinitionItem,
+      // DefinitionTerm,
+      // DefinitionDescription,
+      CollapsibleSection,
+      StyledHorizontalRule,
+      AdvancedCodeBlock,
+      // Phase 3 Advanced Features - temporarily disabled
+      // MermaidDiagram,
+      // KaTeXMath,
+      // AdvancedTable,
+      // CodeLanguagePicker,
+      // WordCounter,
+      // AutoSave.configure({
+      //   delay: 5000,
+      //   onSave: (content) => {
+      //     if (onChange) onChange(content);
+      //     console.log('Auto-saved content');
+      //   },
+      // }),
+      // FocusMode,
+      CharacterCount,
+      Typography.configure({
+        openDoubleQuote: '"',
+        closeDoubleQuote: '"',
+        openSingleQuote: "'",
+        closeSingleQuote: "'",
+        ellipsis: '…',
+        emDash: '—',
+        enDash: '–',
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -107,8 +256,13 @@ const Canvas = ({ value, onChange, preview, theme, onRequestEdit, editor, setEdi
   };
 
   if (preview) {
+    // Auto-detect theme if not provided
+    const isDark = theme === 'dark' || 
+                   (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) ||
+                   (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'dark');
+    
     return (
-      <div style={{ backgroundColor: 'var(--card-bg)', color: 'var(--fg)' }} className="relative w-full min-h-screen flex flex-col items-center justify-center transition-all duration-300">
+      <div className="medium-editor-container relative w-full min-h-screen flex flex-col items-center justify-center transition-all duration-300">
         <ArticlePreview
           html={value}
           onEdit={() => onRequestEdit ? onRequestEdit() : setEditor && setEditor(true)}
@@ -119,17 +273,19 @@ const Canvas = ({ value, onChange, preview, theme, onRequestEdit, editor, setEdi
           tags={tags}
           username={meta?.author}
           avatar={meta?.authorImage}
+          onBack={() => onRequestEdit ? onRequestEdit() : setEditor && setEditor(true)}
+          darkTheme={isDark}
         />
       </div>
     );
   }
 
-  // Improved metadata rendering
+  // Medium-like editor container
   return (
     <div className="flex justify-center w-full min-h-[900px] py-8">
       <div
-        className="relative shadow-2xl rounded-lg border w-[794px] min-h-[1123px] max-w-full p-14 overflow-auto flex flex-col cursor-text"
-        style={{ backgroundColor: 'var(--card-bg)', color: 'var(--fg)', borderColor: 'var(--input-bg)' }}
+        className="medium-article relative shadow-2xl rounded-lg border w-[794px] min-h-[1123px] max-w-full p-14 overflow-auto flex flex-col cursor-text"
+        style={{ backgroundColor: 'var(--medium-background)', color: 'var(--medium-text)', borderColor: 'var(--medium-border)' }}
         onClick={handleCanvasClick}
         tabIndex={0}
       >
@@ -140,27 +296,27 @@ const Canvas = ({ value, onChange, preview, theme, onRequestEdit, editor, setEdi
               <img src={meta.coverImage} alt={title || meta?.title || 'Cover'} className="w-full h-full object-cover" />
             </div>
           )}
-          <h1 className="block w-full text-3xl font-bold bg-transparent outline-none mb-2" style={{ fontFamily: 'Charter, Georgia, serif' }}>{title || meta?.title || 'Untitled Article'}</h1>
-          {meta?.subtitle && <h2 className="text-lg text-gray-600 dark:text-gray-300 mb-2">{meta.subtitle}</h2>}
-          <div className="flex items-center gap-3 mt-2 mb-2">
-            {meta?.authorImage && <img src={meta.authorImage} alt={meta.author || 'Author'} className="w-10 h-10 rounded-full object-cover" />}
+          <h1 className="block w-full text-4xl font-bold bg-transparent outline-none mb-4">{title || meta?.title || 'Untitled Article'}</h1>
+          {meta?.subtitle && <h2 className="text-xl text-gray-600 dark:text-gray-300 font-normal mb-4">{meta.subtitle}</h2>}
+          <div className="flex items-center gap-3 mt-4 mb-6">
+            {meta?.authorImage && <img src={meta.authorImage} alt={meta.author || 'Author'} className="w-12 h-12 rounded-full object-cover" />}
             <div>
-              <div className="text-base font-medium text-gray-800 dark:text-gray-200">{meta?.author || 'Anonymous'}</div>
+              <div className="text-base font-medium">{meta?.author || 'Anonymous'}</div>
               <div className="text-sm text-gray-500 dark:text-gray-400">{date || meta?.date || meta?.publishedAt || meta?.$createdAt ? new Date(date || meta?.date || meta?.publishedAt || meta?.$createdAt).toLocaleDateString() : ''}</div>
             </div>
           </div>
-          <div className="flex flex-col gap-2 mt-2">
+          <div className="flex flex-col gap-3 mt-4">
             {(category || meta?.category) && (
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-xs text-gray-600 dark:text-gray-300">Category:</span>
-                <span className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-xs font-medium">{category || meta?.category}</span>
+                <span className="font-semibold text-sm text-gray-600 dark:text-gray-300">Category:</span>
+                <span className="inline-block bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm font-medium">{category || meta?.category}</span>
               </div>
             )}
             {(tags && tags.length > 0) || (meta?.tags && meta?.tags.length > 0) ? (
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-xs text-gray-600 dark:text-gray-300">Tags:</span>
+                <span className="font-semibold text-sm text-gray-600 dark:text-gray-300">Tags:</span>
                 {(tags && tags.length > 0 ? tags : meta?.tags || []).slice(0, 3).map((tag, i) => (
-                  <span key={i} className="bg-gray-200 dark:bg-blue-700 text-gray-700 dark:text-blue-100 px-3 py-1 rounded-full text-xs font-medium">{tag}</span>
+                  <span key={i} className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">{tag}</span>
                 ))}
               </div>
             ) : null}

@@ -1,3 +1,4 @@
+import PageBackNav from '../../components/ui/PageBackNav';
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { databases, storage } from '../../lib/appwrite/appwrite';
@@ -6,6 +7,7 @@ import { Input } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Textarea from '../../components/ui/Textarea';
 import ChipInput from '../../components/ui/ChipInput';
+import Tag from '../../components/ui/Tag';
 import Dropdown from '../../components/ui/Dropdown';
 import { useSnackbar } from '../../components/ui/Snackbar';
 import { X, Upload, Image as ImageIcon, Link as LinkIcon, Loader2, PlusCircle, Pencil, CheckCircle2, XCircle } from 'lucide-react';
@@ -14,7 +16,7 @@ import BannerInput from '../../components/ui/BannerInput.jsx';
 
 const DB_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = 'projects';
-const BUCKET_ID = 'media';
+const BUCKET_ID = 'codelf.me-media';
 const defaultBanner = '/banner-light.jpg';
 
 const initialState = {
@@ -51,7 +53,7 @@ export default function ProjectForm() {
     if (isEdit) {
       databases.getDocument(DB_ID, COLLECTION_ID, id)
           .then((doc) => {
-            setForm({ ...doc, stack: doc.stack || [] });
+            setForm({ ...doc, stack: Array.isArray(doc.stack) ? doc.stack : (doc.stack ? doc.stack.split(',').map(s => s.trim()) : []) });
             setBannerPreview(doc.banner || defaultBanner);
           })
           .catch(() => showSnackbar({
@@ -232,7 +234,8 @@ export default function ProjectForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg)] transition-colors duration-300 py-8">
+    <div className="min-h-screen w-full bg-[var(--bg)] transition-colors duration-300 py-8" style={{position:'relative'}}>
+      <PageBackNav fallback="/projects" label="Back to Projects" />
       <UniversalForm
         fields={fields}
         values={form}
@@ -254,15 +257,22 @@ export default function ProjectForm() {
         }
       >
         {/* Custom stack input */}
-        <div className="mb-4">
-          <label className="block mb-2 font-semibold text-sm text-gray-700 dark:text-gray-200">Stack</label>
-          <ChipInput
-            value={form.stack}
-            onChange={stack => setForm(f => ({ ...f, stack }))}
-            placeholder="Add a tech and press Enter"
-            className="mb-4"
-          />
-        </div>
+         <div className="mb-4">
+           <label className="block mb-2 font-semibold text-sm text-gray-700 dark:text-gray-200">Stack</label>
+           <ChipInput
+             value={form.stack}
+             onChange={stack => setForm(f => ({ ...f, stack }))}
+             placeholder="Add a tech and press Enter"
+             chipColor="blue"
+             chipVariant="tag"
+             className="mb-4"
+           />
+           {form.stack && form.stack.length > 0 && (
+             <div className="flex flex-wrap gap-2 mt-2">
+               {form.stack.map((tech, i) => <Tag key={i} color="blue" size="sm">{tech}</Tag>)}
+             </div>
+           )}
+         </div>
 
         <div className="flex gap-2 mt-6">
           <Button type="submit" disabled={submitting} className="px-4 py-2 rounded-full text-sm flex items-center gap-2 min-w-[130px] justify-center">
